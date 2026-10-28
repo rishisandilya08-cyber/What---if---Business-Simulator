@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>What-If Business Simulator</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Fraunces:wght@600&display=swap">
+<style>
+:root{--bg:#eef1f4;--panel:#fff;--ink:#14212b;--mut:#5d6b78;--line:#d8dee4;--acc:#0b6e69;--acc2:#c2410c;--ok:#15803d;--warn:#b45309;--bad:#b91c1c;--soft:#e4f1f0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1519;--panel:#172027;--ink:#e6edf2;--mut:#93a3b1;--line:#2a3944;--acc:#3fc1b9;--acc2:#fb923c;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--soft:#12302f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1519;--panel:#172027;--ink:#e6edf2;--mut:#93a3b1;--line:#2a3944;--acc:#3fc1b9;--acc2:#fb923c;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--soft:#12302f;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 "IBM Plex Sans",system-ui,sans-serif}
+header{padding:16px 20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);background:var(--panel)}
+h1{font:600 22px "Fraunces",Georgia,serif;margin:0}h2{font-size:13px;margin:0 0 10px;font-weight:600}
+.sub{color:var(--mut);font-size:12px}
+.wrap{display:grid;grid-template-columns:310px 1fr;gap:14px;padding:14px;max-width:1500px;margin:auto}
+@media(max-width:980px){.wrap{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:14px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.kpi b{display:block;font-size:22px;font-weight:600}.kpi span{color:var(--mut);font-size:12px}
+.kpi.main{background:var(--soft);border-color:var(--acc)}
+label{display:flex;justify-content:space-between;font-size:12px;margin-top:10px}label output{font-weight:600;color:var(--acc)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+button{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 11px;border-radius:6px;cursor:pointer}
+button:hover{border-color:var(--acc)}button:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:1100px){.g2{grid-template-columns:1fr}}
+.bar{margin:8px 0}.bar div.t{display:flex;justify-content:space-between;font-size:12px}
+.bar div.b{height:9px;background:var(--line);border-radius:5px;overflow:hidden;margin-top:3px}.bar i{display:block;height:100%}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:520px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right}th:first-child,td:first-child{text-align:left}
+tr.sel td{background:var(--soft)}tbody tr{cursor:pointer}
+.chat{height:250px;overflow:auto;border:1px solid var(--line);border-radius:6px;padding:8px;background:var(--bg);font-size:13px}
+.m{margin:0 0 8px;padding:7px 10px;border-radius:8px;max-width:92%;white-space:pre-wrap}
+.m.a{background:var(--panel);border:1px solid var(--line)}.m.u{background:var(--acc);color:#fff;margin-left:auto}
+.ask{display:flex;gap:6px;margin-top:8px}.ask input{flex:1;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);font:inherit}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.alert{padding:7px 10px;border-left:3px solid;margin:6px 0;background:var(--bg);font-size:12.5px;border-radius:0 6px 6px 0}
+svg text{fill:var(--mut);font-size:10px;font-family:inherit}
+.leg{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--mut)}.leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px}
+</style></head><body>
+<header><div><h1>What-If Business Simulator</h1><div class="sub">Can operations absorb +20% sales? Test decisions across workforce, production, materials, inventory and logistics (₹ in lakhs, 12-month view).</div></div>
+<div class="row"><button id="th">Toggle theme</button><button id="rs">Reset</button></div></header>
+<div class="wrap">
+<aside>
+<div class="card"><h2>Decision levers</h2><div id="ctl"></div></div>
+<div class="card"><h2>Scenario presets</h2><div class="row" id="pre"></div></div>
+</aside>
+<main>
+<div class="kpis" id="kpis"></div>
+<div class="g2">
+<div class="card"><h2>Demand vs. what operations can deliver</h2><div id="ch"></div>
+<div class="leg"><span><i style="background:var(--acc2)"></i>Demand</span><span><i style="background:var(--acc)"></i>Shipped</span><span><i style="background:var(--mut)"></i>Operating capacity</span></div></div>
+<div class="card"><h2>Peak load by function (months 4–12)</h2><div id="ut"></div><div id="al"></div></div>
+</div>
+<div class="g2">
+<div class="card"><h2>Scenario comparison <span class="sub">(click a row to load it)</span></h2><div class="tw"><table id="tb"></table></div></div>
+<div class="card"><h2>Risk simulation: 300 demand-uncertainty runs</h2><div id="mc"></div></div>
+</div>
+<div class="card"><h2>AI scenario agent</h2>
+<div class="chat" id="chat" aria-live="polite"></div>
+<div class="ask"><input id="q" placeholder="Try: sales 30%, hire 20, trucks 4  ·  optimize  ·  what is the bottleneck?" aria-label="Ask the agent"><button class="p" id="go">Ask</button></div>
+<div class="row" style="margin-top:8px"><button data-q="optimize">Optimize for 97% service</button><button data-q="bottleneck">Find bottleneck</button><button data-q="sales 35%">What if sales +35%?</button><button data-q="explain">Explain results</button></div></div>
+</main></div>
+<script>
+const BASE=9000,PRICE=1200,VC=700,SEAS=[.92,.9,.95,1,1.02,1,.98,1,1.05,1.12,1.2,1.1],MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const CFG=[['uplift','Sales growth target','%',0,50,1,20],['hires','New hires (productive after 2–3 months)','',0,80,1,0],['ot','Overtime on current staff','%',0,25,1,0],['shift','Extra production shift hours/day','h',0,8,1,0],['sup','Extra supplier capacity','%',0,30,1,0],['trucks','Extra delivery trucks','',0,20,1,0],['tpl','3PL burst logistics','units',0,3000,100,0],['buf','Safety-stock target','units',0,6000,250,2000],['vol','Demand volatility','%',0,25,1,8]];
+const DEF={};CFG.forEach(c=>DEF[c[0]]=c[6]);let P={...DEF};
+const PRE={'Baseline (no growth)':{...DEF,uplift:0},'+20%, no changes':{...DEF},'People-led':{...DEF,hires:40,ot:10},'Balanced plan':{...DEF,hires:25,ot:6,shift:3,sup:8,trucks:6,buf:3500},'Aggressive +35%':{...DEF,uplift:35,hires:60,ot:12,shift:6,sup:20,trucks:12,tpl:1500,buf:4500}};
+let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+function sim(p,noise){let st=3000,rows=[],T={rev:0,cost:0,ship:0,dem:0},pk={lab:0,mac:0,mat:0,log:0};
+for(let m=0;m<12;m++){const ramp=m<1?0:m<3?.5:1,up=p.uplift/100*Math.min(1,(m+1)/3);
+let dem=BASE*SEAS[m]*(1+up)*(noise?1+(rnd()+rnd()+rnd()-1.5)*p.vol/50:1);
+const lab=(120+p.hires*ramp)*80*(1+p.ot/100),mac=10000*(1+.6*p.shift/8),mat=10800*(1+p.sup/100),log=(25+p.trucks)*400+p.tpl,pc=Math.min(lab,mac,mat);
+const prod=Math.min(pc,Math.max(0,dem+p.buf-st)),av=st+prod,ship=Math.min(dem,av,log);st=av-ship;
+if(m>=3){pk.lab=Math.max(pk.lab,dem/lab);pk.mac=Math.max(pk.mac,dem/mac);pk.mat=Math.max(pk.mat,dem/mat);pk.log=Math.max(pk.log,dem/log)}
+const cost=ship*VC/1e5+(120+p.hires)*.35+p.ot/100*120*.35*1.5+p.trucks*.6+p.shift*2+p.tpl*.0015+st*.0002+p.uplift*1.5+42*0;
+T.rev+=ship*PRICE/1e5;T.cost+=cost;T.ship+=ship;T.dem+=dem;rows.push({dem,ship,cap:Math.min(pc,log),st})}
+return{rows,T,pk,svc:T.ship/T.dem,profit:T.rev-T.cost,st}}
+function mc(p){let ok=0,s=0,w=0;const N=300;for(let i=0;i<N;i++){const r=sim(p,true);s+=r.svc;if(r.svc>=.95)ok++;w=Math.max(w,1-r.svc)}return{pOK:ok/N,avg:s/N,worst:w}}
+const NM={lab:'Workforce',mac:'Production lines',mat:'Raw material supply',log:'Logistics'};
+const bott=r=>Object.entries(r.pk).sort((a,b)=>b[1]-a[1])[0][0];
+const f=(n,d=0)=>n.toLocaleString('en-IN',{maximumFractionDigits:d});
+function risk(r,x,p){return Math.min(100,Math.round((1-x.pOK)*55+(1-r.svc)*220+p.ot*.9))}
+const $=id=>document.getElementById(id);
+function build(){$('ctl').innerHTML=CFG.map(c=>`<label for="s_${c[0]}">${c[1]}<output id="o_${c[0]}"></output></label><input type="range" id="s_${c[0]}" min="${c[3]}" max="${c[4]}" step="${c[5]}" value="${P[c[0]]}">`).join('');
+CFG.forEach(c=>$('s_'+c[0]).oninput=e=>{P[c[0]]=+e.target.value;render()});
+$('pre').innerHTML=Object.keys(PRE).map(k=>`<button data-p="${k}">${k}</button>`).join('');
+$('pre').onclick=e=>{const k=e.target.dataset.p;if(k){P={...PRE[k]};render()}}}
+function sync(){CFG.forEach(c=>{$('s_'+c[0]).value=P[c[0]];$('o_'+c[0]).textContent=f(P[c[0]])+(c[2]&&c[2]!='units'?c[2]:c[2]=='units'?' units':'')})}
+function chart(r){const W=620,H=230,L=40,B=24,mx=Math.max(...r.rows.map(x=>x.dem),...r.rows.map(x=>x.cap))*1.08,x=i=>L+i*(W-L-10)/11,y=v=>H-B-v/mx*(H-B-10);
+const ln=(k,c,d)=>`<polyline fill="none" stroke="${c}" stroke-width="2.2" ${d?'stroke-dasharray="5 4"':''} points="${r.rows.map((o,i)=>x(i)+','+y(o[k])).join(' ')}"/>`;
+let g='';for(let i=0;i<=4;i++){const v=mx*i/4;g+=`<line x1="${L}" x2="${W-10}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="4" y="${y(v)+3}">${f(v/1000,1)}k</text>`}
+$('ch').innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Demand, shipped and capacity by month">${g}${MO.map((m,i)=>`<text x="${x(i)-8}" y="${H-6}">${m}</text>`).join('')}${ln('cap','var(--mut)',1)}${ln('dem','var(--acc2)')}${ln('ship','var(--acc)')}</svg>`}
+function render(){sync();const r=sim(P,false),x=mc(P),b=bott(r),rk=risk(r,x,P),base=sim(PRE['Baseline (no growth)'],false);
+const col=v=>v>=.97?'var(--ok)':v>=.9?'var(--warn)':'var(--bad)';
+$('kpis').innerHTML=`<div class="kpi main"><b style="color:${col(r.svc)}">${f(r.svc*100,1)}%</b><span>Demand fulfilled</span></div><div class="kpi"><b>${f(r.T.ship)}</b><span>Units shipped (vs ${f(base.T.ship)} base)</span></div><div class="kpi"><b>₹${f(r.T.rev,0)}L</b><span>Revenue</span></div><div class="kpi"><b style="color:${r.profit>=base.profit?'var(--ok)':'var(--bad)'}">₹${f(r.profit,0)}L</b><span>Profit (${r.profit>=base.profit?'+':''}${f(r.profit-base.profit,0)}L vs base)</span></div><div class="kpi"><b>${NM[b]}</b><span>Main bottleneck</span></div><div class="kpi"><b style="color:${rk<30?'var(--ok)':rk<60?'var(--warn)':'var(--bad)'}">${rk}/100</b><span>Risk score</span></div>`;
+chart(r);
+$('ut').innerHTML=Object.entries(r.pk).map(([k,v])=>`<div class="bar"><div class="t"><span>${NM[k]}</span><b style="color:${v>1?'var(--bad)':v>.9?'var(--warn)':'var(--ok)'}">${f(v*100)}%</b></div><div class="b"><i style="width:${Math.min(100,v*100)}%;background:${v>1?'var(--bad)':v>.9?'var(--warn)':'var(--ok)'}"></i></div></div>`).join('');
+let al='';const A=(c,t)=>al+=`<div class="alert" style="border-color:var(${c})">${t}</div>`;
+Object.entries(r.pk).forEach(([k,v])=>{if(v>1)A('--bad',`${NM[k]} is over capacity at peak (${f(v*100)}%). Demand will go unmet.`);else if(v>.9)A('--warn',`${NM[k]} is running hot (${f(v*100)}%). Little room for surprises.`)});
+if(P.ot>15)A('--warn','Overtime above 15% raises burnout and attrition risk.');if(r.rows.some(o=>o.st<500)&&P.uplift>0)A('--warn','Inventory falls below 500 units in at least one month.');
+$('al').innerHTML=al||'<div class="alert" style="border-color:var(--ok)">All functions have headroom under this plan.</div>';
+const pc=x.pOK;$('mc').innerHTML=`<div class="kpis"><div class="kpi"><b>${f(pc*100)}%</b><span>Runs with ≥95% fulfilment</span></div><div class="kpi"><b>${f(x.avg*100,1)}%</b><span>Average fulfilment</span></div><div class="kpi"><b>${f(x.worst*100,1)}%</b><span>Worst-case shortfall</span></div></div><p class="sub">Each run adds random demand swings of about ±${P.vol}% per month. A plan that only works on the average forecast is fragile; look for ≥80% here.</p>`;
+const rows=Object.keys(PRE).map(k=>{const q=sim(PRE[k],false),y=mc(PRE[k]);return{k,q,y,sel:JSON.stringify(PRE[k])==JSON.stringify(P)}});
+rows.push({k:'Your current plan',q:r,y:x,sel:!rows.some(z=>z.sel),cur:1});
+$('tb').innerHTML=`<thead><tr><th>Scenario</th><th>Fulfilled</th><th>Profit ₹L</th><th>P(≥95%)</th><th>Bottleneck</th></tr></thead><tbody>${rows.map(z=>`<tr data-k="${z.k}" class="${z.sel?'sel':''}"><td>${z.k}</td><td>${f(z.q.svc*100,1)}%</td><td>${f(z.q.profit,0)}</td><td>${f(z.y.pOK*100)}%</td><td>${NM[bott(z.q)]}</td></tr>`).join('')}</tbody>`;
+$('tb').onclick=e=>{const k=e.target.closest('tr')?.dataset.k;if(PRE[k]){P={...PRE[k]};render()}};
+window._r={r,x,b,rk}}
+const say=(t,u)=>{const d=document.createElement('div');d.className='m '+(u?'u':'a');d.textContent=t;$('chat').appendChild(d);$('chat').scrollTop=1e9};
+const LEV={lab:['hires',10,'hire 10 more people'],mac:['shift',1,'add 1 extra shift hour'],mat:['sup',3,'raise supplier capacity by 3%'],log:['trucks',2,'add 2 trucks']};
+function optimize(){const plan={};let n=0;while(n++<80){const r=sim(P,false);if(r.svc>=.97)break;const b=bott(r),[k,s,t]=LEV[b],c=CFG.find(z=>z[0]==k);if(P[k]>=c[4]){if(P.tpl<3000){P.tpl+=500;plan['3PL burst +500 units']=1;continue}break}P[k]=Math.min(c[4],P[k]+s);plan[t]=(plan[t]||0)+1}
+render();const o=Object.entries(plan).map(([t,c])=>`• ${t}${c>1?' × '+c:''}`).join('\n');say(o?`I added levers where the bottleneck was, one step at a time:\n${o}\n\nResult: ${f(_r.r.svc*100,1)}% of demand fulfilled, profit ₹${f(_r.r.profit,0)}L, risk ${_r.rk}/100.`:'The current plan already reaches 97% fulfilment.')}
+function ask(t){t=t.trim();if(!t)return;say(t,1);const l=t.toLowerCase();let ch=[];
+const g=(re,key,mx)=>{const m=l.match(re);if(m){P[key]=Math.min(mx,+m[1]);ch.push(key+' = '+P[key])}};
+g(/(?:sales|growth|demand)[^\d]{0,12}(\d+)/,'uplift',50);g(/hire[^\d]{0,8}(\d+)/,'hires',80);g(/truck[^\d]{0,8}(\d+)/,'trucks',20);g(/overtime[^\d]{0,8}(\d+)/,'ot',25);g(/shift[^\d]{0,8}(\d+)/,'shift',8);g(/supplier[^\d]{0,8}(\d+)/,'sup',30);g(/(?:3pl|burst)[^\d]{0,8}(\d+)/,'tpl',3000);g(/(?:stock|buffer|inventory)[^\d]{0,8}(\d+)/,'buf',6000);
+if(/optimi|fix|best plan/.test(l))return optimize();
+if(/reset/.test(l)){P={...DEF};render();return say('Reset to the +20% do-nothing case.')}
+if(ch.length){render();const{r,x,b,rk}=_r;return say(`Applied: ${ch.join(', ')}.\nFulfilment ${f(r.svc*100,1)}%, profit ₹${f(r.profit,0)}L, risk ${rk}/100. The bottleneck is ${NM[b]} (${f(r.pk[b]*100)}% peak load). ${x.pOK<.8?'Under demand swings only '+f(x.pOK*100)+'% of runs hit 95%, so the plan is fragile.':'The plan holds up in '+f(x.pOK*100)+'% of risk runs.'}`)}
+const{r,x,b,rk}=_r;
+if(/bottle|constraint|limit/.test(l))return say(`Tightest function: ${NM[b]} at ${f(r.pk[b]*100)}% of capacity at peak.\n`+Object.entries(r.pk).map(([k,v])=>`${NM[k]}: ${f(v*100)}%`).join('\n')+`\nFix it with: ${LEV[b][2]}, or type "optimize".`);
+return say(`Fulfilment is ${f(r.svc*100,1)}%. Peak load is highest in ${NM[b]} (${f(r.pk[b]*100)}%). Profit is ₹${f(r.profit,0)}L and risk is ${rk}/100.\nHiring takes 2–3 months to pay off, so growth in the first quarter leans on overtime, inventory and 3PL. Safety stock covers the Oct–Nov peak.\nYou can say things like "sales 30%, hire 20, trucks 4" or "optimize".`)}
+$('go').onclick=()=>{ask($('q').value);$('q').value=''};$('q').onkeydown=e=>{if(e.key=='Enter')$('go').click()};
+document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>ask(b.dataset.q));
+$('rs').onclick=()=>{P={...DEF};render()};
+$('th').onclick=()=>{const d=document.documentElement,dk=d.dataset.theme?d.dataset.theme=='dark':matchMedia('(prefers-color-scheme:dark)').matches;d.dataset.theme=dk?'light':'dark'};
+build();render();
+say('Hi, I’m the scenario agent. The baseline is 9,000 units a month against about 10,000 of production capacity. A +20% target pushes demand past what logistics, labour and materials can supply in peak months. Move the levers, type a scenario, or say “optimize”.');
+</script></body></html>
